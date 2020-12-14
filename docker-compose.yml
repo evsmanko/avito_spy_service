@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+
+  avito_spy_db:
+    image: postgres:12.1-alpine
+    volumes:
+      - postgres_data_query:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=avito_backend
+      - POSTGRES_PASSWORD=19av28psy
+      - POSTGRES_DB=avito_spy_db
+
+  avito_rest:
+    build: avito_rest_service
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    volumes:
+      - ./avito_rest_service/:/app/
+    ports:
+      - 8001:8000
+    environment:
+      - DATABASE_URI=postgresql://avito_backend:19av28psy@avito_spy_db/avito_spy_db
+
+  avito_spy:
+      build: avito_spy_service
+      command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+      volumes:
+        - ./avito_spy_service/:/app/
+      ports:
+        - 8002:8000
+      environment:
+        - DATABASE_URI=postgresql://avito_backend:19av28psy@avito_spy_db/avito_spy_db
+
+volumes:
+  postgres_data_query:
